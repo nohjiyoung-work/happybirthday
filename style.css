@@ -1,0 +1,272 @@
+* { 
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #00d4f5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+  font-family: 'Arial Black', sans-serif;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* ── 상단 텍스트 ── */
+#top-text {
+  margin-top: 6vh;
+  font-size: 2rem;
+  font-weight: 900;
+  color: #000;
+  text-align: center;
+  line-height: 1.5;
+  min-height: 6vh;
+  transition: opacity 0.5s;
+}
+
+/* ── 타이머 ── */
+#timer {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #000;
+  margin-top: 1vh;
+  min-height: 3vh;
+  opacity: 0.7;
+}
+
+/* ── 전환 컨테이너 ── */
+#mic-toggle {
+  margin-top: 3vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── 시작 버튼 ── */
+#start-btn {
+  padding: 1.5vh 5vw;
+  background: #000;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.1vw;
+  transition: transform 0.15s, background 0.2s;
+}
+
+#start-btn:hover  { background: #222; }
+#start-btn:active { transform: scale(0.96); }
+
+/* ── 마이크 레벨 바 (기본: 숨김) ── */
+#mic-bar-wrap {
+  display: none;
+  align-items: center;
+  gap: 2vw;
+  background: rgba(0,0,0,0.15);
+  border-radius: 50px;
+  padding: 1.2vh 2vw;
+  width: 20vw;
+  height: 6vh;
+}
+
+#mic-bar-wrap.active {
+  display: flex;
+}
+
+#mic-label {
+  font-size: 2vw;
+  flex-shrink: 0;
+}
+
+#mic-bar-track {
+  flex: 1;
+  height: 1vh;
+  background: rgba(0,0,0,0.2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+#mic-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #00aa44, #ffcc00, #ff3300);
+  border-radius: 3px;
+  transition: width 0.06s linear;
+}
+
+/* ── 촛불 씬 ── */
+#candle-scene {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ── 불꽃 ── */
+#flame-wrap {
+  position: relative;
+  width: 60%;
+  height: 15vh;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  transform-origin: bottom center;
+}
+
+#flame {
+  width: 10vw;
+  height: 15vh;
+  border-radius: 50% 50% 30% 30% / 60% 60% 40% 40%;
+  background: radial-gradient(ellipse at 50% 70%, #ffee00 0%, #ff8800 45%, #ff3300 100%);
+  box-shadow:
+    0 0 2vw 1vw rgba(255,120,0,0.5),
+    0 0 4vw 2vw rgba(255,60,0,0.25);
+  transform-origin: bottom center;
+  animation: idleFlicker 1.8s ease-in-out infinite alternate;
+  transition: opacity 0.3s;
+}
+
+@keyframes idleFlicker {
+  0%   { transform: scaleX(1)    scaleY(1)    rotate(-2deg); }
+  30%  { transform: scaleX(0.93) scaleY(1.04) rotate(1deg);  }
+  60%  { transform: scaleX(1.05) scaleY(0.97) rotate(-1deg); }
+  100% { transform: scaleX(0.97) scaleY(1.03) rotate(2deg);  }
+}
+
+#flame.blown {
+  animation: none;
+}
+
+/* ── 심지 ── */
+#wick {
+  width: 1vw;
+  height: 3vh;
+  background: #222;
+  border-radius: 2px 2px 0 0;
+  position: relative;
+}
+
+#wick.smoking::after {
+  position: absolute;
+  bottom: 2vh;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0.4vw;
+  height: 5vh;
+  background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
+  border-radius: 1px;
+  animation: smokeRise 1s ease-out forwards;
+}
+
+@keyframes smokeRise {
+  0%   { height: 0;   opacity: 0.6; transform: translateX(-50%) scaleX(1); }
+  100% { height: 5vh; opacity: 0;   transform: translateX(-50%) scaleX(3); }
+}
+
+/* ── 양초 몸통 ── */
+#candle-body {
+  width: 20vw;
+  height: 40vh;
+  background: #fff;
+  position: relative;
+  box-shadow: inset -0.8vw 0 1.6vw rgba(0,0,0,0.06);
+}
+
+/* ── 불꽃 파티클 오버레이 ── */
+#particle-canvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+  display: none;
+}
+
+/* ── Happy Birthday 결과 화면 ── */
+#result-screen {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: #00d4f5;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  z-index: 20;
+  animation: fadeIn 0.6s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+#result-screen h1 {
+  margin-top: 8vh;
+  font-size: 2rem;
+  font-weight: 900;
+  color: #000;
+  letter-spacing: 0.2vw;
+  text-align: center;
+}
+
+#result-screen .cake-emoji {
+  font-size: 1.5rem;
+  margin: 1.5vh 0;
+}
+
+#result-screen .record {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #000;
+  opacity: 0.65;
+  margin-top: 1vh;
+}
+
+/* ── 결과 화면: 꺼진 심지 ── */
+#result-screen .wick-art {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#result-screen .wick-line {
+  width: 1vw;
+  height: 3vh;
+  background: #111;
+  border-radius: 2px;
+  position: relative;
+}
+
+/* ── 연기 ── */
+#result-screen .smoke {
+  width: 0.4vw;
+  height: 15vh;
+  background: linear-gradient(to top, rgba(0,0,0,0.45), transparent);
+  border-radius: 2px;
+  animation: smokeDrift 2s ease-out infinite;
+  transform-origin: bottom center;
+}
+
+@keyframes smokeDrift {
+  0%   { transform: scaleX(1)   translateY(0);    opacity: 0.5; }
+  50%  { transform: scaleX(2.5) translateY(-1vh); opacity: 0.3; }
+  100% { transform: scaleX(4)   translateY(-2vh); opacity: 0;   }
+}
+
+#result-screen .candle-stub {
+  width: 20vw;
+  height: 40vh;
+  background: #fff;
+}
