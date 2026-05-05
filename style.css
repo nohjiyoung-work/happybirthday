@@ -11,7 +11,7 @@ body {
   align-items: center;
   justify-content: flex-start;
   min-height: 100vh;
-  font-family: 'Arial Black', sans-serif;
+  font-family: "Noto Sans KR", sans-serif;
   overflow: hidden;
   user-select: none;
 }
@@ -19,8 +19,8 @@ body {
 /* ── 상단 텍스트 ── */
 #top-text {
   margin-top: 6vh;
-  font-size: 2rem;
-  font-weight: 900;
+  font-size: clamp(1.5rem, 5vw, 2.5rem); /* 최소/유동/최대 크기 제한 */
+  font-weight: 700;
   color: #000;
   text-align: center;
   line-height: 1.5;
@@ -67,12 +67,12 @@ body {
 #mic-bar-wrap {
   display: none;
   align-items: center;
-  gap: 2vw;
+  gap: 1vw;
   background: rgba(0,0,0,0.15);
   border-radius: 50px;
-  padding: 1.2vh 2vw;
-  width: 20vw;
-  height: 6vh;
+  padding: 1.5vh 5vw;
+  width: 40vw;
+  height: 5vh;
 }
 
 #mic-bar-wrap.active {
@@ -80,7 +80,7 @@ body {
 }
 
 #mic-label {
-  font-size: 2vw;
+  font-size: 1.5rem;
   flex-shrink: 0;
 }
 
@@ -103,10 +103,10 @@ body {
 /* ── 촛불 씬 ── */
 #candle-scene {
   position: fixed;
+  display: flex;
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  display: flex;
   flex-direction: column;
   align-items: center;
 }
@@ -115,7 +115,7 @@ body {
 #flame-wrap {
   position: relative;
   width: 60%;
-  height: 15vh;
+  height: 20vh;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -124,7 +124,7 @@ body {
 
 #flame {
   width: 10vw;
-  height: 15vh;
+  height: 20vh;
   border-radius: 50% 50% 30% 30% / 60% 60% 40% 40%;
   background: radial-gradient(ellipse at 50% 70%, #ffee00 0%, #ff8800 45%, #ff3300 100%);
   box-shadow:
@@ -148,7 +148,7 @@ body {
 
 /* ── 심지 ── */
 #wick {
-  width: 1vw;
+  width: 10px;
   height: 3vh;
   background: #222;
   border-radius: 2px 2px 0 0;
@@ -174,7 +174,7 @@ body {
 
 /* ── 양초 몸통 ── */
 #candle-body {
-  width: 20vw;
+  width: 120px;
   height: 40vh;
   background: #fff;
   position: relative;
@@ -266,7 +266,32 @@ body {
 }
 
 #result-screen .candle-stub {
-  width: 20vw;
+  width: 120px;
   height: 40vh;
   background: #fff;
+}
+
+/* 태블릿 이상 화면에서 적용될 스타일 */
+@media (min-width: 768px) {
+  #top-text {
+    margin-top: 10vh;
+  }
+  #mic-bar-wrap {
+    margin-top: 1vh;
+    border-radius: 50px;
+    padding: 1.2vh 2vw;
+    width: 20vw;
+    height: 5vh;
+  }
+  #candle-body, #result-screen .candle-stub {
+    width: 150px;
+  }
+  #flame-wrap {
+    width: 80px;
+    height: 10px;
+  }
+  #flame {
+    width: 50px;
+    height: 20vh;
+  }
 }
