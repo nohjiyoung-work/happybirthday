@@ -9,24 +9,17 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&display=swap" rel="stylesheet">
 </head>
-
 <body>
-  <!-- 메인 화면 -->
+
+  <!-- 터치 후에만 보임 -->
   <div id="top-text">초를 힘껏 불어주세요!</div>
-
-  <div id="timer">⏱ 0.0s</div>
-
-  <!-- 버튼 / 레벨 바 전환 영역 -->
-<div id="mic-toggle">
-  <button id="start-btn">시작하기</button>
+  <div id="timer"></div>
   <div id="mic-bar-wrap">
     <span id="mic-label">🎤</span>
     <div id="mic-bar-track">
       <div id="mic-bar"></div>
     </div>
   </div>
-</div>
-
 
   <div id="candle-scene">
     <div id="flame-wrap">
@@ -36,12 +29,10 @@
     <div id="candle-body"></div>
   </div>
 
-  <!-- 불꽃 파티클 캔버스 -->
   <canvas id="particle-canvas"></canvas>
 
-  <!-- 결과 화면 -->
   <div id="result-screen">
-    <h1>HAPPY BIRTHDAY!</h1>
+    <h1 id="birthday-text">HAPPY BIRTHDAY!</h1>
     <div class="cake-emoji">🎂</div>
     <div class="record" id="result-record"></div>
     <div class="wick-art">
@@ -53,5 +44,4 @@
 
   <script src="script.js"></script>
 </body>
-
 </html>
