@@ -1,4 +1,4 @@
-* { 
+* {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -14,56 +14,37 @@ body {
   font-family: "Noto Sans KR", sans-serif;
   overflow: hidden;
   user-select: none;
+  cursor: pointer;
 }
 
-/* ── 상단 텍스트 ── */
+/* ── 처음엔 숨김, 터치 후 등장 ── */
 #top-text {
-  margin-top: 6vh;
-  font-size: clamp(1.5rem, 5vw, 2.5rem); /* 최소/유동/최대 크기 제한 */
+  margin-top: 10vh;
+  font-size: clamp(1.2rem, 4vw, 2rem);
   font-weight: 700;
   color: #000;
   text-align: center;
   line-height: 1.5;
   min-height: 6vh;
-  transition: opacity 0.5s;
+  opacity: 0;
+  transition: opacity 0.5s ease;
 }
 
-/* ── 타이머 ── */
+#top-text.show { opacity: 1; }
+
 #timer {
-  font-size: 1.5rem;
+  font-size: clamp(1rem, 3vw, 1.5rem);
   font-weight: 700;
   color: #000;
   margin-top: 1vh;
   min-height: 3vh;
-  opacity: 0.7;
+  opacity: 0;
+  transition: opacity 0.5s ease;
 }
 
-/* ── 전환 컨테이너 ── */
-#mic-toggle {
-  margin-top: 3vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+#timer.show { opacity: 0.7; }
 
-/* ── 시작 버튼 ── */
-#start-btn {
-  padding: 1.5vh 5vw;
-  background: #000;
-  color: #fff;
-  border: none;
-  border-radius: 50px;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-  letter-spacing: 0.1vw;
-  transition: transform 0.15s, background 0.2s;
-}
-
-#start-btn:hover  { background: #222; }
-#start-btn:active { transform: scale(0.96); }
-
-/* ── 마이크 레벨 바 (기본: 숨김) ── */
+/* ── 마이크 레벨 바 ── */
 #mic-bar-wrap {
   display: none;
   align-items: center;
@@ -73,14 +54,18 @@ body {
   padding: 1.5vh 5vw;
   width: 40vw;
   height: 5vh;
+  margin-top: 3vh;
+  opacity: 0;
+  transition: opacity 0.5s ease;
 }
 
-#mic-bar-wrap.active {
+#mic-bar-wrap.show {
   display: flex;
+  opacity: 1;
 }
 
 #mic-label {
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   flex-shrink: 0;
 }
 
@@ -100,13 +85,13 @@ body {
   transition: width 0.06s linear;
 }
 
-/* ── 촛불 씬 ── */
+/* ── 촛불 씬 — 항상 하단 고정 ── */
 #candle-scene {
   position: fixed;
-  display: flex;
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
+  display: flex;
   flex-direction: column;
   align-items: center;
 }
@@ -114,7 +99,7 @@ body {
 /* ── 불꽃 ── */
 #flame-wrap {
   position: relative;
-  width: 60%;
+  width: 10vw;
   height: 20vh;
   display: flex;
   align-items: flex-end;
@@ -142,9 +127,7 @@ body {
   100% { transform: scaleX(0.97) scaleY(1.03) rotate(2deg);  }
 }
 
-#flame.blown {
-  animation: none;
-}
+#flame.blown { animation: none; }
 
 /* ── 심지 ── */
 #wick {
@@ -153,23 +136,6 @@ body {
   background: #222;
   border-radius: 2px 2px 0 0;
   position: relative;
-}
-
-#wick.smoking::after {
-  position: absolute;
-  bottom: 2vh;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0.4vw;
-  height: 5vh;
-  background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
-  border-radius: 1px;
-  animation: smokeRise 1s ease-out forwards;
-}
-
-@keyframes smokeRise {
-  0%   { height: 0;   opacity: 0.6; transform: translateX(-50%) scaleX(1); }
-  100% { height: 5vh; opacity: 0;   transform: translateX(-50%) scaleX(3); }
 }
 
 /* ── 양초 몸통 ── */
@@ -181,7 +147,7 @@ body {
   box-shadow: inset -0.8vw 0 1.6vw rgba(0,0,0,0.06);
 }
 
-/* ── 불꽃 파티클 오버레이 ── */
+/* ── 파티클 캔버스 ── */
 #particle-canvas {
   position: fixed;
   inset: 0;
@@ -190,7 +156,7 @@ body {
   display: none;
 }
 
-/* ── Happy Birthday 결과 화면 ── */
+/* ── 결과 화면 ── */
 #result-screen {
   display: none;
   position: fixed;
@@ -204,33 +170,37 @@ body {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.96); }
+  from { opacity: 0; transform: scale(0.97); }
   to   { opacity: 1; transform: scale(1); }
 }
 
-#result-screen h1 {
-  margin-top: 8vh;
-  font-size: 2rem;
-  font-weight: 900;
-  color: #000;
-  letter-spacing: 0.2vw;
+/* ── HAPPY BIRTHDAY 글자 ── */
+#birthday-text {
+  margin-top: 10vh;
+  font-size: clamp(1.8rem, 7vw, 3rem);
+  font-weight: 800;
+  letter-spacing: 0.05em;
   text-align: center;
 }
 
+#birthday-text .char {
+  display: inline-block;
+  transition: color 0.8s ease;
+}
+
 #result-screen .cake-emoji {
-  font-size: 1.5rem;
-  margin: 1.5vh 0;
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  margin: 0.8vh 0 2vh;
 }
 
 #result-screen .record {
-  font-size: 1.5rem;
+  font-size: clamp(1rem, 3vw, 1.5rem);
   font-weight: 700;
   color: #000;
   opacity: 0.65;
-  margin-top: 1vh;
 }
 
-/* ── 결과 화면: 꺼진 심지 ── */
+/* ── 결과 화면 꺼진 초 ── */
 #result-screen .wick-art {
   position: fixed;
   bottom: 0;
@@ -242,14 +212,13 @@ body {
 }
 
 #result-screen .wick-line {
-  width: 1vw;
+  width: 10px;
   height: 3vh;
   background: #111;
   border-radius: 2px;
   position: relative;
 }
 
-/* ── 연기 ── */
 #result-screen .smoke {
   width: 0.4vw;
   height: 15vh;
@@ -271,27 +240,23 @@ body {
   background: #fff;
 }
 
-/* 태블릿 이상 화면에서 적용될 스타일 */
+/* ── 태블릿 이상 ── */
 @media (min-width: 768px) {
-  #top-text {
-    margin-top: 10vh;
+  #mic-bar-wrap { 
+    width: 20vw; padding: 1.2vh 2vw; 
   }
-  #mic-bar-wrap {
-    margin-top: 1vh;
-    border-radius: 50px;
-    padding: 1.2vh 2vw;
-    width: 20vw;
-    height: 5vh;
+
+  #candle-body, #result-screen .candle-stub { 
+    width: 150px; 
   }
-  #candle-body, #result-screen .candle-stub {
-    width: 150px;
-  }
+
   #flame-wrap {
-    width: 80px;
-    height: 10px;
-  }
-  #flame {
-    width: 50px;
+    position: relative;
+    width: 5vw;
     height: 20vh;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    transform-origin: bottom center;
   }
 }
