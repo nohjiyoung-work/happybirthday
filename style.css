@@ -261,4 +261,8 @@ body {
     color: #000;
     opacity: 0.65;
   }
+
+  #result-screen .smoke {
+    width: 0.3vw;
+  }
 }
