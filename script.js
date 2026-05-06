@@ -1,27 +1,26 @@
 // ───────────────────────────────────────────
-//  설정값 — 여기만 바꾸면 감도 조절 가능
+//  설정값
 // ───────────────────────────────────────────
-const BLOW_THRESHOLD       = 0.15;  // 이 이상이면 불꽃 흔들림 시작
-const EXTINGUISH_THRESHOLD = 0.35;  // 이 이상이면 촛불 꺼짐
+const BLOW_THRESHOLD       = 0.15;
+const EXTINGUISH_THRESHOLD = 0.40;
 
 // ───────────────────────────────────────────
-//  상태 변수
+//  상태
 // ───────────────────────────────────────────
 let audioCtx  = null;
 let analyser  = null;
 let micStream = null;
-let animFrame = null;
 let isRunning = false;
 let isBlown   = false;
 let startTime = null;
 
 // ───────────────────────────────────────────
-//  DOM 참조
+//  DOM
 // ───────────────────────────────────────────
 const flame        = document.getElementById('flame');
 const flameWrap    = document.getElementById('flame-wrap');
 const micBar       = document.getElementById('mic-bar');
-const startBtn     = document.getElementById('start-btn');
+const micBarWrap   = document.getElementById('mic-bar-wrap');
 const timerEl      = document.getElementById('timer');
 const topText      = document.getElementById('top-text');
 const resultScreen = document.getElementById('result-screen');
@@ -30,12 +29,26 @@ const pCanvas      = document.getElementById('particle-canvas');
 const pCtx         = pCanvas.getContext('2d');
 
 // ───────────────────────────────────────────
-//  마이크 시작
+//  화면 터치 → 마이크 시작
+//  (처음 터치 한 번만 / 이후 터치는 무시)
 // ───────────────────────────────────────────
-startBtn.addEventListener('click', async () => {
-  if (isRunning) return;
+let started = false;
 
+function onFirstTouch() {
+  if (started) return;
+  started = true;
+  startMic();
+}
+
+document.body.addEventListener('click',      onFirstTouch);
+document.body.addEventListener('touchstart', onFirstTouch, { passive: true });
+
+// ───────────────────────────────────────────
+//  마이크 요청 & 시작
+// ───────────────────────────────────────────
+async function startMic() {
   try {
+    // 브라우저 마이크 권한 팝업 발생
     micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
     audioCtx  = new (window.AudioContext || window.webkitAudioContext)();
     analyser  = audioCtx.createAnalyser();
@@ -45,36 +58,34 @@ startBtn.addEventListener('click', async () => {
     isRunning = true;
     startTime = Date.now();
 
-    // 버튼 → 레벨 바로 전환
-    startBtn.style.display = 'none';
-    document.getElementById('mic-bar-wrap').classList.add('active');
-
-    topText.textContent = '초를 힘껏 불어주세요!';
+    // 허용 후 UI 등장
+    topText.classList.add('show');
+    timerEl.classList.add('show');
+    micBarWrap.classList.add('show');
 
     tick();
+
   } catch (e) {
+    // 거부 시 재시도 안내
+    started = false; // 다시 터치 허용
+    topText.classList.add('show');
     topText.textContent = '마이크 권한을 허용해주세요.';
   }
-});
+}
 
 // ───────────────────────────────────────────
-//  메인 루프 — 매 프레임 볼륨 읽고 불꽃 제어
+//  메인 루프
 // ───────────────────────────────────────────
 function tick() {
   if (!isRunning || isBlown) return;
 
   const data = new Uint8Array(analyser.frequencyBinCount);
   analyser.getByteFrequencyData(data);
-
-  // 평균 볼륨 0~1 로 정규화
   const avg = data.reduce((a, b) => a + b, 0) / data.length / 255;
 
-  // 타이머 업데이트
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
   timerEl.textContent = `⏱ ${elapsed}s`;
-
-  // 마이크 레벨 바 (시각적 피드백)
-  micBar.style.width = Math.min(avg * 3 * 100, 100) + '%';
+  micBar.style.width  = Math.min(avg * 3 * 100, 100) + '%';
 
   if (avg > EXTINGUISH_THRESHOLD) {
     extinguish(elapsed);
@@ -87,32 +98,25 @@ function tick() {
     resetFlame();
   }
 
-  animFrame = requestAnimationFrame(tick);
+  requestAnimationFrame(tick);
 }
 
 // ───────────────────────────────────────────
-//  불꽃 반응: 바람 세기에 따라 늘어나고 기울어짐
+//  불꽃 반응
 // ───────────────────────────────────────────
 function applyBlowEffect(avg) {
-  // t: 0(약한 바람) ~ 1(꺼지기 직전)
-  const t = (avg - BLOW_THRESHOLD) / (EXTINGUISH_THRESHOLD - BLOW_THRESHOLD);
-
-  const scaleX   = 1 + t * 0.6;       // 옆으로 퍼짐
-  const scaleY   = 1 - t * 0.35;      // 세로 줄어듦
-  const skewDeg  = t * 20;            // 기울기
-  const rotate   = -skewDeg * 0.5;
+  const t      = (avg - BLOW_THRESHOLD) / (EXTINGUISH_THRESHOLD - BLOW_THRESHOLD);
+  const scaleX = 1 + t * 0.6;
+  const scaleY = 1 - t * 0.35;
+  const skew   = t * 20;
 
   flame.classList.add('blown');
-  flame.style.transform      = `scaleX(${scaleX}) scaleY(${scaleY}) rotate(${rotate}deg)`;
-  flame.style.opacity        = String(1 - t * 0.3);
-  flameWrap.style.transform  = `rotate(${skewDeg * 0.3}deg)`;
-
-  topText.textContent = t > 0.6 ? '조금만 더! 💨' : '잘 하고 있어요! 💨';
+  flame.style.transform     = `scaleX(${scaleX}) scaleY(${scaleY}) rotate(${-skew * 0.5}deg)`;
+  flame.style.opacity       = String(1 - t * 0.3);
+  flameWrap.style.transform = `rotate(${skew * 0.3}deg)`;
+  topText.textContent       = t > 0.6 ? '조금만 더! 💨' : '잘 하고 있어요! 💨';
 }
 
-// ───────────────────────────────────────────
-//  불꽃 idle 상태 복원
-// ───────────────────────────────────────────
 function resetFlame() {
   flame.classList.remove('blown');
   flame.style.transform     = '';
@@ -125,96 +129,103 @@ function resetFlame() {
 //  촛불 끄기
 // ───────────────────────────────────────────
 function extinguish(elapsed) {
-  isBlown   = true;
-  isRunning = false;
-
-  // 불꽃 즉시 페이드아웃
+  isBlown = isRunning = false;
   flame.style.transition = 'opacity 0.15s';
   flame.style.opacity    = '0';
-
-  // 마이크 스트림 정지
-  micStream.getTracks().forEach(track => track.stop());
-
-  // 파티클 폭발 시작
+  micStream.getTracks().forEach(t => t.stop());
   startParticles();
-
-  // 3초 후 결과 화면
-  setTimeout(() => {
-    stopParticles();
-    showResult(elapsed);
-  }, 3000);
+  setTimeout(() => { stopParticles(); showResult(elapsed); }, 2000);
 }
 
 // ───────────────────────────────────────────
-//  결과 화면 표시
+//  결과 화면
 // ───────────────────────────────────────────
 function showResult(elapsed) {
-  resultRecord.textContent    = `🕯️ ${elapsed}초 만에 껐어요!`;
-  resultScreen.style.display  = 'flex';
+  resultRecord.textContent   = `${elapsed}초 만에 껐어요!`;
+  resultScreen.style.display = 'flex';
+  initColorCycle();
 }
 
 // ───────────────────────────────────────────
-//  파티클 시스템
+//  HAPPY BIRTHDAY 색상 사이클
+// ───────────────────────────────────────────
+const PALETTES = [
+  ['#ff0000','#ff6600','#ffcc00','#00cc44','#0066ff','#9900cc','#ff0066'],
+  ['#ff3399','#ff99cc','#ffccff','#cc99ff','#6633ff','#0099ff','#33ffcc'],
+  ['#fff700','#ff6b00','#ff0055','#aa00ff','#0044ff','#00ffaa','#ff00ff'],
+  ['#00ffff','#ff00ff','#ffff00','#ff4444','#44ff44','#4444ff','#ff8800'],
+  ['#f72585','#7209b7','#3a0ca3','#4361ee','#4cc9f0','#06d6a0','#ffd166'],
+];
+
+function initColorCycle() {
+  const h1   = document.getElementById('birthday-text');
+  const text = h1.textContent;
+
+  h1.innerHTML = text.split('').map(ch =>
+    ch === ' '
+      ? '<span class="char">&nbsp;</span>'
+      : `<span class="char">${ch}</span>`
+  ).join('');
+
+  const chars = h1.querySelectorAll('.char');
+
+  function applyColors() {
+    const palette = PALETTES[Math.floor(Math.random() * PALETTES.length)];
+    chars.forEach((el, i) => { el.style.color = palette[i % palette.length]; });
+  }
+
+  applyColors();
+  setInterval(applyColors, 500);
+}
+
+// ───────────────────────────────────────────
+//  파티클
 // ───────────────────────────────────────────
 let particles  = [];
 let pAnimFrame = null;
 
 function startParticles() {
   pCanvas.style.display = 'block';
-  pCanvas.width         = window.innerWidth;
-  pCanvas.height        = window.innerHeight;
+  pCanvas.width  = window.innerWidth;
+  pCanvas.height = window.innerHeight;
 
-  const cx = pCanvas.width  / 2;
-  const cy = pCanvas.height * 0.32;
+  const cx = pCanvas.width / 2;
+  const cy = pCanvas.height * 0.6;
 
-  for (let i = 0; i < 80; i++) {
-    particles.push(makeParticle(cx, cy));
-  }
-
+  for (let i = 0; i < 80; i++) particles.push(makeParticle(cx, cy));
   drawParticles();
 }
 
 function makeParticle(cx, cy) {
   const angle  = Math.random() * Math.PI * 2;
   const speed  = 2 + Math.random() * 5;
-  const colors = ['#ff4400', '#ff8800', '#ffdd00', '#ffaa00', '#ff6600', '#fff'];
-
+  const colors = ['#ff4400','#ff8800','#ffdd00','#ffaa00','#ff6600','#fff'];
   return {
     x: cx, y: cy,
     vx: Math.cos(angle) * speed,
     vy: Math.sin(angle) * speed - 4,
-    alpha:  1,
+    alpha: 1,
     radius: 3 + Math.random() * 5,
-    color:  colors[Math.floor(Math.random() * colors.length)],
-    decay:  0.015 + Math.random() * 0.02,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    decay: 0.015 + Math.random() * 0.02,
   };
 }
 
 function drawParticles() {
   pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
-
   particles = particles.filter(p => p.alpha > 0);
-
   particles.forEach(p => {
-    p.x     += p.vx;
-    p.y     += p.vy;
-    p.vy    += 0.12;   // 중력
-    p.alpha -= p.decay;
-
+    p.x += p.vx; p.y += p.vy; p.vy += 0.12; p.alpha -= p.decay;
     pCtx.save();
     pCtx.globalAlpha = Math.max(p.alpha, 0);
     pCtx.beginPath();
     pCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-    pCtx.fillStyle   = p.color;
-    pCtx.shadowBlur  = 8;
-    pCtx.shadowColor = p.color;
+    pCtx.fillStyle = pCtx.shadowColor = p.color;
+    pCtx.shadowBlur = 8;
     pCtx.fill();
     pCtx.restore();
   });
-
-  if (particles.length > 0) {
-    pAnimFrame = requestAnimationFrame(drawParticles);
-  }
+  if (particles.length > 0) pAnimFrame = requestAnimationFrame(drawParticles);
 }
 
 function stopParticles() {
