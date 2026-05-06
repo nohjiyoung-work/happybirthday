@@ -177,7 +177,7 @@ body {
 /* ── HAPPY BIRTHDAY 글자 ── */
 #birthday-text {
   margin-top: 10vh;
-  font-size: clamp(1.8rem, 7vw, 3rem);
+  font-size: clamp(1.8rem, 5vw, 2.5rem);
   font-weight: 800;
   letter-spacing: 0.05em;
   text-align: center;
@@ -216,7 +216,7 @@ body {
 }
 
 #result-screen .smoke {
-  width: 1vw;
+  width: 2vw;
   height: 15vh;
   background: linear-gradient(to top, rgba(0,0,0,0.45), transparent);
   border-radius: 2px;
